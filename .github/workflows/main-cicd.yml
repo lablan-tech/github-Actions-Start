@@ -59,6 +59,7 @@ jobs:
       
   build_project_and_sonar_scan:
     runs-on: self-hosted
+    needs: tests
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 17
