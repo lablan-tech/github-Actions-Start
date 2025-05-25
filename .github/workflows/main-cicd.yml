@@ -109,7 +109,7 @@ jobs:
     - name: Download JAR Artifacts
       uses: actions/download-artifact@v4
       with:
-        name: app.jar
+        name: app-jar
         path: app
     - name: Display structure of downloaded files
       run: ls -R app
