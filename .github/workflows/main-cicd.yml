@@ -127,7 +127,17 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         push: true
-        tags: oktbabs/bankapp:latest      
+        tags: oktbabs/bankapp:latest 
+
+  delete_kubernetes_cluster:
+    runs-on: self-hosted  
+    steps:
+    - uses: actions/checkout@v4   
+    - name: Kubernetes Delete Installation with eksctl
+      run: |
+        eksctl delete cluster \
+        --name Kubernetes-ghactions-cluster  \
+        --region eu-west-2 \        
 
   deploy_to_kubernetes_cluster:
     runs-on: self-hosted  
