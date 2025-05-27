@@ -130,6 +130,10 @@ jobs:
         tags: oktbabs/bankapp:latest      
 
   deploy_to_kubernetes_cluster:
+    runs-on: self-hosted  
+    needs: build_docker_image_and_push   
+    steps:
+    - uses: actions/checkout@v4    
     - name: Kubernetes Installation with eksctl
       run: |
          eksctl create cluster \
