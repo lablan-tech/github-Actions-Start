@@ -127,6 +127,10 @@ jobs:
     #   with:
     #     push: true
     #     tags: oktbabs/bankapp:latest 
+    - name: Create ECR repository if it doesn't exist
+      run: |
+        aws ecr describe-repositories --repository-names ${{ github.event.repository.name }} || \
+        aws ecr create-repository --repository-name ${{ github.event.repository.name }}
    
     - name: Login to Amazon ECR
       id: login-ecr
