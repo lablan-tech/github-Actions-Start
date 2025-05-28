@@ -110,6 +110,7 @@ jobs:
       with:
         name: app-jar
         path: app
+      
     #- name: Display structure of downloaded files
     #  run: ls -R *app
 
@@ -131,13 +132,16 @@ jobs:
       run: |
         aws ecr describe-repositories --repository-names ${{ github.event.repository.name }} || \
         aws ecr create-repository --repository-name ${{ github.event.repository.name }}
-   
+                
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
     - name: Extract Git commit SHA
       id: commit
       run: echo "short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+    - name: Push to ECR
+      id: ecr
+      uses: jwalton/gh-ecr-push@v2
     - name: Build, tag, and push image to Amazon ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}        
