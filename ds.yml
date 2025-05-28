@@ -55,7 +55,7 @@ spec:
     spec:
       containers:
       - name: bankapp
-        image: oktbabs/bankapp:latest
+        image: DOCKER_IMAGE
         ports:
         - containerPort: 8080
         env:
