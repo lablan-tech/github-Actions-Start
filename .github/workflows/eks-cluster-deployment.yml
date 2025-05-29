@@ -100,16 +100,16 @@ jobs:
     - name: "Example show SonarQube Quality Gate Status value"
       run: echo "The Quality Gate status is ${{ steps.sonarqube-quality-gate-check.outputs.quality-gate-status }}"        
 
-  build_docker_image_and_push_to_ECR:
-    runs-on: self-hosted
-    needs: build_project_and_sonar_scan
-    steps:
-    - uses: actions/checkout@v4
-    - name: Download JAR Artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: app-jar
-        path: app
+#  build_docker_image_and_push_to_ECR:
+#    runs-on: self-hosted
+#    needs: build_project_and_sonar_scan
+#    steps:
+#    - uses: actions/checkout@v4
+#    - name: Download JAR Artifacts
+#      uses: actions/download-artifact@v4
+#      with:
+#        name: app-jar
+#        path: app
       
     #- name: Display structure of downloaded files
     #  run: ls -R *app
