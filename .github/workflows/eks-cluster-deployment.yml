@@ -128,7 +128,7 @@ jobs:
     #   with:
     #     push: true
     #     tags: oktbabs/bankapp:latest 
-  build_docker_image_and_push_to_ECR:
+  create_ECR_registry:
     runs-on: self-hosted
     needs: build_project_and_sonar_scan
     steps:
@@ -139,8 +139,9 @@ jobs:
         aws ecr create-repository --repository-name ${{ github.event.repository.name }}
                 
 
-  build-and-push:
+  build-and-push-to-ECR:
     runs-on: self-hosted
+    needs: create_ECR_registry
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -168,7 +169,7 @@ jobs:
         
   create_and_prepare_kubernetes_cluster:
     runs-on: self-hosted  
-    needs: build_docker_image_and_push_to_ECR   
+    needs: build-and-push-to-ECR   
     steps:
     - uses: actions/checkout@v4    
     - name: Kubernetes Installation with eksctl
