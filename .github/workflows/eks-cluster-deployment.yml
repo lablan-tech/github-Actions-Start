@@ -132,11 +132,14 @@ jobs:
     runs-on: self-hosted
     needs: build_project_and_sonar_scan
     steps:
-    - uses: actions/checkout@v4    
+    - uses: actions/checkout@v4
+    - name: Set full ECR repository path
+      run: echo "ECR_REPOSITORY=${{ github.event.repository.name }}/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
+
     - name: Create ECR repository if it doesn't exist
       run: |
-        aws ecr describe-repositories --repository-names ${{ github.event.repository.name }} || \
-        aws ecr create-repository --repository-name ${{ github.event.repository.name }}
+        aws ecr describe-repositories --repository-names $ECR_REPOSITORY || \
+        aws ecr create-repository --repository-name $ECR_REPOSITORY
                 
 
   build-and-push-to-ECR:
@@ -159,13 +162,14 @@ jobs:
       
     - name: Build Docker image
       run: |
-        docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest .
+         docker build -t ${{ steps.login-ecr.outputs.registry }}/${{ ECR_REPOSITORY }}:latest .
+
     #- name: Tag Docker image
     #  run: |
     #    docker tag ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:latest ${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}/${{ secrets.ECR_REPOSITORY }}:latest
     - name: Push Docker image to AWS ECR
-      run: |
-        docker push ${{ steps.login-ecr.outputs.registry }}/${{ github.event.repository.name }}/${{ secrets.ECR_REPOSITORY }}:latest
+      run: |  
+        docker push ${{ steps.login-ecr.outputs.registry }}/${{ ECR_REPOSITORY }}:latest
         
   create_and_prepare_kubernetes_cluster:
     runs-on: self-hosted  
@@ -177,7 +181,6 @@ jobs:
          eksctl create cluster \
          --name Kubernetes-ghactions-cluster  \
          --region eu-west-2 \
-         --nodegroup-name linux-nodes \
          --node-type t3.micro \
          --nodes 2 \
          --nodes-min 1 \
@@ -217,7 +220,7 @@ jobs:
         ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
         IMAGE_TAG: ${{ steps.commit.outputs.short }}
       run: |
-        sed -i.bak "s|DOCKER_IMAGE|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" manifests/hello-app-deployment.yaml
+        sed -i.bak "s|DOCKER_IMAGE|${{ steps.login-ecr.outputs.registry }}/${{ ECR_REPOSITORY }}:latest|g" manifests/hello-app-deployment.yaml
         kubectl apply -f ./manifests/ds.yaml
         kubectl get nodes -o wide
         kubectl get pods --all-namespaces
