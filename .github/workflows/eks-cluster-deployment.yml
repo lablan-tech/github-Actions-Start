@@ -176,8 +176,8 @@ jobs:
       run: |
         AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
         echo "ECR_REGISTRY=${AWS_ACCOUNT_ID}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com" >> $GITHUB_ENV
-    - name: Output Registry
-      run: echo "Using ECR Registry: $ECR_REGISTRY"
+#    - name: Output Registry
+#      run: echo "Using ECR Registry: $ECR_REGISTRY"
       
     - name: Build Docker image
       env:
