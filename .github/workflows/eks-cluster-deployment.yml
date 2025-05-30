@@ -217,11 +217,10 @@ jobs:
 
     - name: Deploy to EKS
       env:
-        ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-        ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-        IMAGE_TAG: ${{ steps.commit.outputs.short }}
+        ECR_REPOSITORY: ${{ github.event.repository.name }}/${{ env.IMAGE_NAME }}
+        IMAGE_TAG: ${{ steps.generate_tag.outputs.tag }}
       run: |
-        sed -i.bak "s|DOCKER_IMAGE|${{ steps.login-ecr.outputs.registry }}/${{ ECR_REPOSITORY }}:latest|g" manifests/hello-app-deployment.yaml
+        sed -i.bak "s|DOCKER_IMAGE|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" manifests/hello-app-deployment.yaml
         kubectl apply -f ./manifests/ds.yaml
         kubectl get nodes -o wide
         kubectl get pods --all-namespaces
