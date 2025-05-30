@@ -134,7 +134,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set full ECR repository path
-      run: echo "ECR_REPOSITORY=${{ env.NAMESPACE }}/${{ github.event.repository.name }}" >> $GITHUB_ENV
+      run: echo "ECR_REPOSITORY=${{ var.NAMESPACE }}/${{ github.event.repository.name }}" >> $GITHUB_ENV
 
     - name: Create ECR repository if it doesn't exist
       run: |
