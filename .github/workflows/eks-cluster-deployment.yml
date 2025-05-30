@@ -132,11 +132,10 @@ jobs:
     runs-on: self-hosted
     needs: build_project_and_sonar_scan
     steps:
-    - uses: actions/checkout@v4
-      env:
-        NAMESPACE: bankapp
-        
+    - uses: actions/checkout@v4       
     - name: Set full ECR repository path
+      env:
+        NAMESPACE: bankapp    
       run: echo "ECR_REPOSITORY=${{ env.NAMESPACE }}/${{ github.event.repository.name }}" >> $GITHUB_ENV
 
     - name: Create ECR repository if it doesn't exist
