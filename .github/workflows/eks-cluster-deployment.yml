@@ -190,33 +190,41 @@ jobs:
         ECR_REPOSITORY="${NAMESPACE}/${REPO_NAME}"   
        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
-        
+     
   create_and_prepare_kubernetes_cluster:
     runs-on: self-hosted  
-    needs: build-and-push-to-ECR   
+    needs: build-and-push-to-ECR
     steps:
-    - uses: actions/checkout@v4    
-    - name: Kubernetes Installation with eksctl
+    - uses: actions/checkout@v4
+
+    - name: Conditionally create EKS cluster
       run: |
-         eksctl create cluster \
-         --name Kubernetes-ghactions-cluster  \
-         --region eu-west-2 \
-         --node-type t3.micro \
-         --nodes 2 \
-         --nodes-min 1 \
-         --nodes-max 3 \
-         --managed
+        echo "Checking if EKS cluster '${{ secrets.EKS_CLUSTER_NAME }}' exists..."
+        if aws eks describe-cluster --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} > /dev/null 2>&1; then
+           echo "Cluster already exists. Skipping creation."
+        else
+             echo "Cluster does not exist. Creating..."
+             eksctl create cluster \
+             --name ${{ secrets.EKS_CLUSTER_NAME }} \
+             --region ${{ secrets.AWS_REGION }} \
+             --node-type t3.micro \
+             --nodes 2 \
+             --nodes-min 1 \
+             --nodes-max 3 \
+             --managed
+        fi
+
     - name: Generate kubeconfig
       run: |
         {
-            echo 'EKS_CREDS<<EOF'
-            aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}  --region ${{ secrets.AWS_REGION }}  --dry-run | base64
-            echo EOF
+         echo 'EKS_CREDS<<EOF'
+         aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }} --dry-run | base64
+         echo EOF
         } >> $GITHUB_ENV
+
     - uses: tale/kubectl-action@v1
       with:
-        base64-kube-config: ${{ env.EKS_CREDS }}
+          base64-kube-config: ${{ env.EKS_CREDS }}
        
     - name: Build, Tag, and Push Docker Image
       run: |
