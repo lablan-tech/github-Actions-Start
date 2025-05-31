@@ -182,11 +182,11 @@ jobs:
     - name: Build Docker image
       env:
         NAMESPACE: bankapp
-        IMAGE_TAG: ${{ steps.generate_tag.outputs.tag }}
+        ECR_REPOSITORY: ${{ NAMESPACE }}/${{ github.event.repository.name }}     
+        IMAGE_TAG: ${{ steps.generate_tag.outputs.tag }}        
       run: |
-        ECR_REPOSITORY: ${{ env.NAMESPACE }}/${{ github.event.repository.name }}
-        docker build -t $ECR_REGISTRY/${{ ECR_REPOSITORY }}:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/${{ ECR_REPOSITORY }}:$IMAGE_TAG  
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG:$IMAGE_TAG  
         
   create_and_prepare_kubernetes_cluster:
     runs-on: self-hosted  
@@ -234,11 +234,10 @@ jobs:
     - name: Deploy to EKS
       env:
         NAMESPACE: bankapp
-
+        ECR_REPOSITORY: ${{ NAMESPACE }}/${{ github.event.repository.name }}       
         IMAGE_TAG: ${{ steps.generate_tag.outputs.tag }}
-      run: |
-        ECR_REPOSITORY: ${{ env.NAMESPACE }}/${{ github.event.repository.name }}      
-        sed -i.bak "s|DOCKER_IMAGE|$ECR_REGISTRY/${{ ECR_REPOSITORY }}:$IMAGE_TAG|g" manifests/hello-app-deployment.yaml
+      run: |     
+        sed -i.bak "s|DOCKER_IMAGE|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" manifests/hello-app-deployment.yaml
         kubectl apply -f ./manifests/ds.yaml
         kubectl get nodes -o wide
         kubectl get pods --all-namespaces
