@@ -250,7 +250,7 @@ jobs:
         REPO_NAME: ${{ github.event.repository.name }}
         #ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
       run: |     
-        sed -i.bak "s|DOCKER_IMAGE|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" manifests/hello-app-deployment.yaml
+        sed -i.bak "s|DOCKER_IMAGE|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" ds.yaml
         kubectl apply -f ds.yaml
         kubectl get nodes -o wide
         kubectl get pods --all-namespaces
