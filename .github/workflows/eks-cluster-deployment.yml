@@ -184,7 +184,7 @@ jobs:
         NAMESPACE: bankapp
         IMAGE_TAG: ${{ steps.generate_tag.outputs.tag }}
       run: |
-        ECR_REPOSITORY: ${{ NAMESPACE }}/${{ github.event.repository.name }}
+        ECR_REPOSITORY: ${{ env.NAMESPACE }}/${{ github.event.repository.name }}
         docker build -t $ECR_REGISTRY/${{ ECR_REPOSITORY }}:$IMAGE_TAG .
         docker push $ECR_REGISTRY/${{ ECR_REPOSITORY }}:$IMAGE_TAG  
         
@@ -237,7 +237,7 @@ jobs:
 
         IMAGE_TAG: ${{ steps.generate_tag.outputs.tag }}
       run: |
-        ECR_REPOSITORY: ${{ NAMESPACE }}/${{ github.event.repository.name }}      
+        ECR_REPOSITORY: ${{ env.NAMESPACE }}/${{ github.event.repository.name }}      
         sed -i.bak "s|DOCKER_IMAGE|$ECR_REGISTRY/${{ ECR_REPOSITORY }}:$IMAGE_TAG|g" manifests/hello-app-deployment.yaml
         kubectl apply -f ./manifests/ds.yaml
         kubectl get nodes -o wide
