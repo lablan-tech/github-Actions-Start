@@ -185,8 +185,8 @@ jobs:
         ECR_REPOSITORY: ${{ env.NAMESPACE }}/${{ github.event.repository.name }}
         IMAGE_TAG: ${{ steps.generate_tag.outputs.tag }}
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG  
+        docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG  
         
   create_and_prepare_kubernetes_cluster:
     runs-on: self-hosted  
@@ -237,7 +237,7 @@ jobs:
         ECR_REPOSITORY: ${{ env.NAMESPACE }}/${{ github.event.repository.name }}
         IMAGE_TAG: ${{ steps.generate_tag.outputs.tag }}
       run: |
-        sed -i.bak "s|DOCKER_IMAGE|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" manifests/hello-app-deployment.yaml
+        sed -i.bak "s|DOCKER_IMAGE|$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG|g" manifests/hello-app-deployment.yaml
         kubectl apply -f ./manifests/ds.yaml
         kubectl get nodes -o wide
         kubectl get pods --all-namespaces
