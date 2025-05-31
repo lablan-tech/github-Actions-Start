@@ -250,14 +250,28 @@ jobs:
         sudo mv kubectl /usr/local/bin/
         kubectl version --client
 
+    - name: Set up ECR info
+      run: |
+        AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+        REGION=${{ secrets.AWS_REGION }}
+        echo "ECR_REGISTRY=${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com" >> $GITHUB_ENV
+        echo "ECR_REPOSITORY=bankapp/${{ github.event.repository.name }}" >> $GITHUB_ENV
+
+    - name: Generate image tag
+      id: generate_tag
+      run: echo "tag=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
     - name: Deploy to EKS
       env:
-        NAMESPACE: bankapp
         IMAGE_TAG: ${{ steps.generate_tag.outputs.tag }}
-        REPO_NAME: ${{ github.event.repository.name }}
-        #ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-      run: |     
+      run: |
+        if [ -z "$IMAGE_TAG" ]; then
+           echo "ERROR: IMAGE_TAG is not set"
+           exit 1
+        fi
+        echo "Using Image: $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
         sed -i.bak "s|DOCKER_IMAGE|$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG|g" ds.yaml
         kubectl apply -f ds.yaml
         kubectl get nodes -o wide
         kubectl get pods --all-namespaces
+
